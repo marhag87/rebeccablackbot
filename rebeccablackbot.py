@@ -22,19 +22,19 @@ client = discord.Client()
 @client.event
 @asyncio.coroutine
 def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+  print('Logged in as')
+  print(client.user.name)
+  print(client.user.id)
+  print('------')
 
 @client.event
 @asyncio.coroutine
 def on_message(message):
-    if message.content.startswith('!friday'):
-        if datetime.today().weekday() == 4:
-            yield from client.send_message(message.channel, 'https://www.youtube.com/watch?v=kfVsfOSbJY0')
-        else:
-            yield from client.send_message(message.channel, 'It is not Friday. Let me link you a video that can educate you on the matter: https://www.youtube.com/watch?v=kfVsfOSbJY0')
+  if message.content.startswith('!friday'):
+    if datetime.today().weekday() == 4:
+      yield from client.send_message(message.channel, 'https://www.youtube.com/watch?v=kfVsfOSbJY0')
+    else:
+      yield from client.send_message(message.channel, 'It is not Friday. Let me link you a video that can educate you on the matter: https://www.youtube.com/watch?v=kfVsfOSbJY0')
 
 @client.event
 @asyncio.coroutine

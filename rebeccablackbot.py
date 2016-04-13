@@ -36,4 +36,10 @@ def on_message(message):
         else:
             yield from client.send_message(message.channel, 'It is not Friday. Let me link you a video that can educate you on the matter: https://www.youtube.com/watch?v=kfVsfOSbJY0')
 
+@client.event
+@asyncio.coroutine
+def on_channel_update(before, after):
+  if before.topic != after.topic:
+    yield from client.send_message(after, 'New topic:\n```\n' + after.topic + '```')
+
 client.run(cfg.get('username'), cfg.get('password'))

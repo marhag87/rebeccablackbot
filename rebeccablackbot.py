@@ -42,4 +42,4 @@ def on_channel_update(before, after):
   if before.topic != after.topic:
     yield from client.send_message(after, 'New topic:\n```\n' + after.topic + '```')
 
-client.run(cfg.get('username'), cfg.get('password'))
+client.run(cfg.get('token'))

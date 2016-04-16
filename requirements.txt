@@ -1,2 +1,2 @@
 discord.py
-pyyaml
+git+https://github.com/marhag87/pyyamlconfig

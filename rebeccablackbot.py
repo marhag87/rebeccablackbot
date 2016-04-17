@@ -32,6 +32,11 @@ def on_message(message):
                                            'can educate you on the matter: ' +
                                            'https://www.youtube.com/watch?v=kfVsfOSbJY0')
 
+    if message.content.startswith('!saturday'):
+        if datetime.today().weekday() == 5:
+            yield from CLIENT.send_message(message.channel,
+                                           'https://www.youtube.com/watch?v=GVCzdpagXOQ')
+
 @CLIENT.event
 @asyncio.coroutine
 def on_channel_update(before, after):

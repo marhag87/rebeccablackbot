@@ -19,6 +19,15 @@ def get_random_caturday_image():
     album = client.get_album(CFG.get('imgur').get('caturdayalbum'))
     return choice([image.get('link') for image in album.images])
 
+def get_days_left(user):
+    """Return days left that user has to toil"""
+    end_date = CFG.get('daysleft').get(str(user))
+    if end_date is None:
+        return "http://i.imgur.com/kkrihuR.png"
+    else:
+        delta = datetime.strptime(end_date, '%Y-%m-%d') - datetime.now()
+        return str(delta.days)
+
 @CLIENT.event
 @asyncio.coroutine
 def on_ready():
@@ -58,6 +67,16 @@ def on_message(message):
         else:
             yield from CLIENT.send_message(message.channel,
                                            'https://i.imgur.com/DKUR9Tk.png')
+
+    if message.content.startswith('!daysleft'):
+        if message.content == '!daysleft':
+            yield from CLIENT.send_message(message.channel,
+                                           get_days_left(message.author))
+        else:
+            user = message.content.rsplit(None, 1)[-1]
+            yield from CLIENT.send_message(message.channel,
+                                           get_days_left(user))
+
 
 @CLIENT.event
 @asyncio.coroutine

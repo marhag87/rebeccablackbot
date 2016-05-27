@@ -4,10 +4,20 @@
 import asyncio
 import sys
 from datetime import datetime
+from random import choice
 from pyyamlconfig import load_config
 import discord
+from imgurpython import ImgurClient
 
 CLIENT = discord.Client()
+
+def get_random_caturday_image():
+    """Return url to random caturday image from album"""
+    client = ImgurClient(CFG.get('imgur').get('clientid'),
+                         CFG.get('imgur').get('clientsecret')
+                        )
+    album = client.get_album(CFG.get('imgur').get('caturdayalbum'))
+    return choice([image.get('link') for image in album.images])
 
 @CLIENT.event
 @asyncio.coroutine
@@ -40,6 +50,14 @@ def on_message(message):
         if datetime.today().weekday() == 5:
             yield from CLIENT.send_message(message.channel,
                                            'https://www.youtube.com/watch?v=GVCzdpagXOQ')
+
+    if message.content.startswith('!caturday'):
+        if datetime.today().weekday() == 5:
+            yield from CLIENT.send_message(message.channel,
+                                           get_random_caturday_image())
+        else:
+            yield from CLIENT.send_message(message.channel,
+                                           'https://i.imgur.com/DKUR9Tk.png')
 
 @CLIENT.event
 @asyncio.coroutine

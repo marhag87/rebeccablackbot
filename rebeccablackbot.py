@@ -17,6 +17,10 @@ def on_ready():
     print(CLIENT.user.name)
     print(CLIENT.user.id)
     print('------')
+    perms = discord.Permissions.none()
+    perms.read_messages = True
+    perms.send_messages = True
+    print(discord.utils.oauth_url(CFG.get('clientid'), permissions=perms))
 
 @CLIENT.event
 @asyncio.coroutine

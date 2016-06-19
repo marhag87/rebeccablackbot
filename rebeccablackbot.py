@@ -62,6 +62,7 @@ def on_message(message):
 
     if message.content.startswith('!caturday'):
         if datetime.today().weekday() == 5:
+            yield from CLIENT.send_typing(message.channel)
             yield from CLIENT.send_message(message.channel,
                                            get_random_caturday_image())
         else:

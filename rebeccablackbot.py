@@ -29,8 +29,7 @@ def get_days_left(user):
         return str(delta.days)
 
 @CLIENT.event
-@asyncio.coroutine
-def on_ready():
+async def on_ready():
     """Print user information once logged in"""
     print('Logged in as')
     print(CLIENT.user.name)
@@ -42,49 +41,47 @@ def on_ready():
     print(discord.utils.oauth_url(CFG.get('clientid'), permissions=perms))
 
 @CLIENT.event
-@asyncio.coroutine
-def on_message(message):
+async def on_message(message):
     """Handle on_message event"""
     if message.content.startswith('!friday'):
         if datetime.today().weekday() == 4:
-            yield from CLIENT.send_message(message.channel,
+            await CLIENT.send_message(message.channel,
                                            'https://www.youtube.com/watch?v=kfVsfOSbJY0')
         else:
-            yield from CLIENT.send_message(message.channel,
+            await CLIENT.send_message(message.channel,
                                            'It is not Friday. Let me link you a video that ' +
                                            'can educate you on the matter: ' +
                                            'https://www.youtube.com/watch?v=kfVsfOSbJY0')
 
     if message.content.startswith('!saturday'):
         if datetime.today().weekday() == 5:
-            yield from CLIENT.send_message(message.channel,
+            await CLIENT.send_message(message.channel,
                                            'https://www.youtube.com/watch?v=GVCzdpagXOQ')
 
     if message.content.startswith('!caturday'):
         if datetime.today().weekday() == 5:
-            yield from CLIENT.send_typing(message.channel)
-            yield from CLIENT.send_message(message.channel,
+            await CLIENT.send_typing(message.channel)
+            await CLIENT.send_message(message.channel,
                                            get_random_caturday_image())
         else:
-            yield from CLIENT.send_message(message.channel,
+            await CLIENT.send_message(message.channel,
                                            'https://i.imgur.com/DKUR9Tk.png')
 
     if message.content.startswith('!daysleft'):
         if message.content == '!daysleft':
-            yield from CLIENT.send_message(message.channel,
+            await CLIENT.send_message(message.channel,
                                            get_days_left(message.author))
         else:
             user = message.content.rsplit(None, 1)[-1]
-            yield from CLIENT.send_message(message.channel,
+            await CLIENT.send_message(message.channel,
                                            get_days_left(user))
 
 
 @CLIENT.event
-@asyncio.coroutine
-def on_channel_update(before, after):
+async def on_channel_update(before, after):
     """Handle on_channel_update event"""
     if before.topic != after.topic:
-        yield from CLIENT.send_message(after, 'New topic:\n```\n' + after.topic + '```')
+        await CLIENT.send_message(after, 'New topic:\n```\n' + after.topic + '```')
 
 CFG = load_config('config.yaml')
 CLIENT.run(CFG.get('token'))

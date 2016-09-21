@@ -85,14 +85,13 @@ async def on_message(message):
         if message.content == '!daysleft':
             await CLIENT.send_message(
                 message.channel,
-                get_days_left(message.author),
+                "<@%s>: %s" % (message.author.id, get_days_left(message.author)),
             )
         else:
             for user in message.mentions:
-                username = "%s#%s" % (user.name, user.discriminator)
                 await CLIENT.send_message(
                     message.channel,
-                    "%s: %s" % (user.name, get_days_left(user)),
+                    "<@%s>: %s" % (user.id, get_days_left(user)),
                 )
 
     if CLIENT.user in message.mentions:

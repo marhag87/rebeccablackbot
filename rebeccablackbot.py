@@ -27,7 +27,10 @@ def get_days_left(user):
         return "http://i.imgur.com/kkrihuR.png"
     else:
         delta = datetime.strptime(end_date, '%Y-%m-%d') - datetime.now()
-        return str(delta.days)
+        if int(delta.days) < 0:
+            return CFG.get('imgur').get('gone')
+        else:
+            return str(delta.days)
 
 @CLIENT.event
 async def on_ready():

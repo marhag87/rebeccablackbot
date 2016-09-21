@@ -13,9 +13,10 @@ CLIENT = discord.Client()
 
 def get_random_caturday_image():
     """Return url to random caturday image from album"""
-    client = ImgurClient(CFG.get('imgur').get('clientid'),
-                         CFG.get('imgur').get('clientsecret')
-                        )
+    client = ImgurClient(
+        CFG.get('imgur').get('clientid'),
+        CFG.get('imgur').get('clientsecret')
+    )
     album = client.get_album(CFG.get('imgur').get('caturdayalbum'))
     return choice([image.get('link') for image in album.images])
 
@@ -38,43 +39,60 @@ async def on_ready():
     perms = discord.Permissions.none()
     perms.read_messages = True
     perms.send_messages = True
-    print(discord.utils.oauth_url(CFG.get('clientid'), permissions=perms))
+    print(
+        discord.utils.oauth_url(CFG.get('clientid'),
+        permissions=perms),
+    )
 
 @CLIENT.event
 async def on_message(message):
     """Handle on_message event"""
     if message.content.startswith('!friday'):
         if datetime.today().weekday() == 4:
-            await CLIENT.send_message(message.channel,
-                                           'https://www.youtube.com/watch?v=kfVsfOSbJY0')
+            await CLIENT.send_message(
+                message.channel,
+                'https://www.youtube.com/watch?v=kfVsfOSbJY0',
+            )
         else:
-            await CLIENT.send_message(message.channel,
-                                           'It is not Friday. Let me link you a video that ' +
-                                           'can educate you on the matter: ' +
-                                           'https://www.youtube.com/watch?v=kfVsfOSbJY0')
+            await CLIENT.send_message(
+                message.channel,
+                'It is not Friday. Let me link you a video that ' +
+                'can educate you on the matter: ' +
+                'https://www.youtube.com/watch?v=kfVsfOSbJY0',
+            )
 
     if message.content.startswith('!saturday'):
         if datetime.today().weekday() == 5:
-            await CLIENT.send_message(message.channel,
-                                           'https://www.youtube.com/watch?v=GVCzdpagXOQ')
+            await CLIENT.send_message(
+                message.channel,
+                'https://www.youtube.com/watch?v=GVCzdpagXOQ',
+            )
 
     if message.content.startswith('!caturday'):
         if datetime.today().weekday() == 5:
             await CLIENT.send_typing(message.channel)
-            await CLIENT.send_message(message.channel,
-                                           get_random_caturday_image())
+            await CLIENT.send_message(
+                message.channel,
+                get_random_caturday_image(),
+            )
         else:
-            await CLIENT.send_message(message.channel,
-                                           'https://i.imgur.com/DKUR9Tk.png')
+            await CLIENT.send_message(
+                message.channel,
+                'https://i.imgur.com/DKUR9Tk.png',
+            )
 
     if message.content.startswith('!daysleft'):
         if message.content == '!daysleft':
-            await CLIENT.send_message(message.channel,
-                                           get_days_left(message.author))
+            await CLIENT.send_message(
+                message.channel,
+                get_days_left(message.author),
+            )
         else:
             user = message.content.rsplit(None, 1)[-1]
-            await CLIENT.send_message(message.channel,
-                                           get_days_left(user))
+            await CLIENT.send_message(
+                message.channel,
+                get_days_left(user),
+            )
 
     if CLIENT.user in message.mentions:
         for trigger in CFG.get('abandontriggers'):
@@ -90,7 +108,10 @@ async def on_message(message):
 async def on_channel_update(before, after):
     """Handle on_channel_update event"""
     if before.topic != after.topic:
-        await CLIENT.send_message(after, 'New topic:\n```\n' + after.topic + '```')
+        await CLIENT.send_message(
+            after,
+            'New topic:\n```\n%s```' % after.topic,
+        )
 
 CFG = load_config('config.yaml')
 CLIENT.run(CFG.get('token'))

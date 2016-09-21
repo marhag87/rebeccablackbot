@@ -76,6 +76,15 @@ async def on_message(message):
             await CLIENT.send_message(message.channel,
                                            get_days_left(user))
 
+    if CLIENT.user in message.mentions:
+        for trigger in CFG.get('abandontriggers'):
+            if trigger in message.content.lower():
+                await CLIENT.send_message(
+                    message.channel,
+                    choice(CFG.get('imgur').get('abandonship')),
+                )
+                break
+
 
 @CLIENT.event
 async def on_channel_update(before, after):

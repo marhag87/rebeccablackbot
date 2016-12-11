@@ -3,6 +3,9 @@
 """A bot for discord that links videos and prints topic changes"""
 from datetime import datetime
 from random import choice
+from html.parser import HTMLParser
+import requests
+import yaml
 from pyyamlconfig import load_config
 import discord
 from imgurpython import ImgurClient
@@ -32,6 +35,53 @@ def get_days_left(user):
             return CFG.get('imgur').get('gone')
         else:
             return str(delta.days)
+
+
+class LunchParser(HTMLParser):
+    """Parse lunch site"""
+    result = {}
+    get_data = False
+    get_food = False
+    restaurant = ''
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'h3':
+            self.get_data = True
+        if tag == 'p':
+            self.get_food = True
+
+    def handle_data(self, data):
+        if self.get_data:
+            self.result[data] = []
+            self.restaurant = data
+            self.get_data = False
+        if self.get_food:
+            self.result[self.restaurant].append(data)
+            self.get_food = False
+
+
+def get_lunch(restaurant=None):
+    """Fetch lunch menu from preston.se"""
+    response = requests.get(
+        'http://preston.se/dagens.html',
+    )
+    if response.status_code == 200:
+        parser = LunchParser()
+        parser.feed(response.text)
+        result = parser.result
+        if restaurant is not None:
+            if parser.result.get(restaurant) is None:
+                return 'No such restaurant'
+            else:
+                result = parser.result.get(restaurant)
+
+        return yaml.dump(
+            result,
+            default_flow_style=False,
+            allow_unicode=True,
+        )
+    else:
+        return 'http://i0.kym-cdn.com/photos/images/original/000/538/460/90d.jpg'
 
 
 @CLIENT.event
@@ -108,6 +158,16 @@ async def on_message(message):
                     choice(CFG.get('imgur').get('abandonship')),
                 )
                 break
+        else:
+            if 'lunch' in message.content.lower():
+                if 'at' in message.content.lower():
+                    lunch = get_lunch(message.content.split('at ')[-1])
+                else:
+                    lunch = get_lunch()
+                await CLIENT.send_message(
+                    message.channel,
+                    lunch,
+                )
 
 
 @CLIENT.event

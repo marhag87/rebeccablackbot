@@ -1,3 +1,4 @@
 git+https://github.com/Rapptz/discord.py
-git+https://github.com/marhag87/pyyamlconfig
+pyyamlconfig
 imgurpython
+pyyaml

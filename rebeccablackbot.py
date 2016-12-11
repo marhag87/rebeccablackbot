@@ -1,8 +1,6 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 """A bot for discord that links videos and prints topic changes"""
-import asyncio
-import sys
 from datetime import datetime
 from random import choice
 from pyyamlconfig import load_config
@@ -10,6 +8,8 @@ import discord
 from imgurpython import ImgurClient
 
 CLIENT = discord.Client()
+CFG = load_config('config.yaml')
+
 
 def get_random_caturday_image():
     """Return url to random caturday image from album"""
@@ -19,6 +19,7 @@ def get_random_caturday_image():
     )
     album = client.get_album(CFG.get('imgur').get('caturdayalbum'))
     return choice([image.get('link') for image in album.images])
+
 
 def get_days_left(user):
     """Return days left that user has to toil"""
@@ -32,6 +33,7 @@ def get_days_left(user):
         else:
             return str(delta.days)
 
+
 @CLIENT.event
 async def on_ready():
     """Print user information once logged in"""
@@ -44,8 +46,9 @@ async def on_ready():
     perms.send_messages = True
     print(
         discord.utils.oauth_url(CFG.get('clientid'),
-        permissions=perms),
+                                permissions=perms),
     )
+
 
 @CLIENT.event
 async def on_message(message):
@@ -62,7 +65,7 @@ async def on_message(message):
                 'It is not Friday. Let me link you a video that ' +
                 'can educate you on the matter: ' +
                 'https://www.youtube.com/watch?v=kfVsfOSbJY0',
-            )
+                )
 
     if message.content.startswith('!saturday'):
         if datetime.today().weekday() == 5:
@@ -89,13 +92,13 @@ async def on_message(message):
             await CLIENT.send_message(
                 message.channel,
                 "<@%s>: %s" % (message.author.id, get_days_left(message.author)),
-            )
+                )
         else:
             for user in message.mentions:
                 await CLIENT.send_message(
                     message.channel,
                     "<@%s>: %s" % (user.id, get_days_left(user)),
-                )
+                    )
 
     if CLIENT.user in message.mentions:
         for trigger in CFG.get('abandontriggers'):
@@ -114,7 +117,6 @@ async def on_channel_update(before, after):
         await CLIENT.send_message(
             after,
             'New topic:\n```\n%s```' % after.topic,
-        )
+            )
 
-CFG = load_config('config.yaml')
 CLIENT.run(CFG.get('token'))

@@ -47,7 +47,7 @@ class LunchParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == 'h3':
             self.get_data = True
-        if tag == 'p':
+        if tag == 'p' or tag == 'li':
             self.get_food = True
 
     def handle_data(self, data):

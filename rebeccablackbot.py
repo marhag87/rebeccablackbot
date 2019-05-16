@@ -60,7 +60,7 @@ class LunchParser(HTMLParser):
             self.get_food = False
 
 
-def get_lunch(restaurant=None):
+def get_lunch(embed):
     """Fetch lunch menu from preston.se"""
     response = requests.get(
         'http://preston.se/dagens.html',
@@ -69,19 +69,14 @@ def get_lunch(restaurant=None):
         parser = LunchParser()
         parser.feed(response.text)
         result = parser.result
-        if restaurant is not None:
-            if parser.result.get(restaurant) is None:
-                return 'No such restaurant'
-            else:
-                result = parser.result.get(restaurant)
 
-        return yaml.dump(
-            result,
-            default_flow_style=False,
-            allow_unicode=True,
-        )
+        for restaurant in result:
+            value = "\n".join(result.get(restaurant))
+            embed.add_field(name=restaurant, value=value)
+
+        return embed
     else:
-        return 'http://i0.kym-cdn.com/photos/images/original/000/538/460/90d.jpg'
+        return embed.set_image(url='http://i0.kym-cdn.com/photos/images/original/000/538/460/90d.jpg')
 
 
 @CLIENT.event
@@ -152,13 +147,9 @@ async def on_message(message):
                 break
         else:
             if 'lunch' in message.content.lower():
-                if 'at' in message.content.lower():
-                    lunch = get_lunch(message.content.split('at ')[-1])
-                else:
-                    lunch = get_lunch()
-                await message.channel.send(
-                    lunch,
-                )
+                embed = discord.Embed(color=10203435)
+                embed = get_lunch(embed)
+                await message.channel.send(embed=embed)
 
 
 @CLIENT.event

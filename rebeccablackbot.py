@@ -162,7 +162,7 @@ async def on_message(message):
 
 
 @CLIENT.event
-async def on_channel_update(before, after):
+async def on_guild_channel_update(before, after):
     """Handle on_channel_update event"""
     if before.topic != after.topic:
         await after.send(

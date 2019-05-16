@@ -105,13 +105,11 @@ async def on_message(message):
     """Handle on_message event"""
     if message.content.startswith('!friday'):
         if datetime.today().weekday() == 4:
-            await CLIENT.send_message(
-                message.channel,
+            await message.channel.send(
                 'https://www.youtube.com/watch?v=kfVsfOSbJY0',
             )
         else:
-            await CLIENT.send_message(
-                message.channel,
+            await message.channel.send(
                 'It is not Friday. Let me link you a video that ' +
                 'can educate you on the matter: ' +
                 'https://www.youtube.com/watch?v=kfVsfOSbJY0',
@@ -119,42 +117,36 @@ async def on_message(message):
 
     if message.content.startswith('!saturday'):
         if datetime.today().weekday() == 5:
-            await CLIENT.send_message(
-                message.channel,
+            await message.channel.send(
                 'https://www.youtube.com/watch?v=GVCzdpagXOQ',
             )
 
     if message.content.startswith('!caturday'):
-        if datetime.today().weekday() == 5:
-            await CLIENT.send_typing(message.channel)
-            await CLIENT.send_message(
-                message.channel,
+        if datetime.today().weekday() == 3:
+            message.channel.typing()
+            await message.channel.send(
                 get_random_caturday_image(),
             )
         else:
-            await CLIENT.send_message(
-                message.channel,
+            await message.channel.send(
                 'https://i.imgur.com/DKUR9Tk.png',
             )
 
     if message.content.startswith('!daysleft'):
         if message.content == '!daysleft':
-            await CLIENT.send_message(
-                message.channel,
+            await message.channel.send(
                 "<@%s>: %s" % (message.author.id, get_days_left(message.author)),
                 )
         else:
             for user in message.mentions:
-                await CLIENT.send_message(
-                    message.channel,
+                await message.channel.send(
                     "<@%s>: %s" % (user.id, get_days_left(user)),
                     )
 
     if CLIENT.user in message.mentions:
         for trigger in CFG.get('abandontriggers'):
             if trigger in message.content.lower():
-                await CLIENT.send_message(
-                    message.channel,
+                await message.channel.send(
                     choice(CFG.get('imgur').get('abandonship')),
                 )
                 break
@@ -164,8 +156,7 @@ async def on_message(message):
                     lunch = get_lunch(message.content.split('at ')[-1])
                 else:
                     lunch = get_lunch()
-                await CLIENT.send_message(
-                    message.channel,
+                await message.channel.send(
                     lunch,
                 )
 
@@ -174,8 +165,7 @@ async def on_message(message):
 async def on_channel_update(before, after):
     """Handle on_channel_update event"""
     if before.topic != after.topic:
-        await CLIENT.send_message(
-            after,
+        await after.send(
             'New topic:\n```\n%s```' % after.topic,
             )
 

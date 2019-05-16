@@ -117,7 +117,7 @@ async def on_message(message):
             )
 
     if message.content.startswith('!caturday'):
-        if datetime.today().weekday() == 3:
+        if datetime.today().weekday() == 5:
             message.channel.typing()
             await message.channel.send(
                 get_random_caturday_image(),

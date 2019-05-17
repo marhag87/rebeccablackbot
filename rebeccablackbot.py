@@ -5,7 +5,6 @@ from datetime import datetime
 from random import choice
 from html.parser import HTMLParser
 import requests
-import yaml
 from pyyamlconfig import load_config
 import discord
 from imgurpython import ImgurClient

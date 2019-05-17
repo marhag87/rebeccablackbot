@@ -7,35 +7,35 @@ from html.parser import HTMLParser
 import requests
 from pyyamlconfig import load_config
 import discord
+from discord.ext import commands
 from imgurpython import ImgurClient
+from enum import Enum
 
-CLIENT = discord.Client()
+
+# Globals
+
+BOT = commands.Bot(
+    command_prefix='!',
+    help_command=commands.DefaultHelpCommand(
+        verify_checks=False,
+        no_category="Commands",
+    ))
 CFG = load_config('config.yaml')
 
 
-def get_random_caturday_image():
-    """Return url to random caturday image from album"""
-    client = ImgurClient(
-        CFG.get('imgur').get('clientid'),
-        CFG.get('imgur').get('clientsecret')
-    )
-    album = client.get_album(CFG.get('imgur').get('caturdayalbum'))
-    return choice([image.get('link') for image in album.images])
+# Helper classes
+
+class Weekday(Enum):
+    Monday = 0
+    Tuesday = 1
+    Wednesday = 2
+    Thursday = 3
+    Friday = 4
+    Saturday = 5
+    Sunday = 6
 
 
-def get_days_left(user):
-    """Return days left that user has to toil"""
-    end_date = CFG.get('daysleft').get(str(user))
-    if end_date is None:
-        return "http://i.imgur.com/kkrihuR.png"
-    else:
-        delta = datetime.strptime(end_date, '%Y-%m-%d') - datetime.now()
-        if int(delta.days) < 0:
-            return CFG.get('imgur').get('gone')
-        else:
-            return str(delta.days)
-
-
+# noinspection PyAbstractClass
 class LunchParser(HTMLParser):
     """Parse lunch site"""
     result = {}
@@ -59,6 +59,8 @@ class LunchParser(HTMLParser):
             self.get_food = False
 
 
+# Helper functions
+
 def get_lunch(embed):
     """Fetch lunch menu from preston.se"""
     response = requests.get(
@@ -78,12 +80,20 @@ def get_lunch(embed):
         return embed.set_image(url='http://i0.kym-cdn.com/photos/images/original/000/538/460/90d.jpg')
 
 
-@CLIENT.event
+def is_day(day):
+    async def predicate(_ctx):
+        return datetime.today().weekday() == day.value
+    return commands.check(predicate)
+
+
+# Events
+
+@BOT.event
 async def on_ready():
     """Print user information once logged in"""
     print('Logged in as')
-    print(CLIENT.user.name)
-    print(CLIENT.user.id)
+    print(BOT.user.name)
+    print(BOT.user.id)
     print('------')
     perms = discord.Permissions.none()
     perms.read_messages = True
@@ -94,69 +104,83 @@ async def on_ready():
     )
 
 
-@CLIENT.event
-async def on_message(message):
-    """Handle on_message event"""
-    if message.content.startswith('!friday'):
-        if datetime.today().weekday() == 4:
-            await message.channel.send(
-                'https://www.youtube.com/watch?v=kfVsfOSbJY0',
-            )
-        else:
-            await message.channel.send(
-                'It is not Friday. Let me link you a video that ' +
-                'can educate you on the matter: ' +
-                'https://www.youtube.com/watch?v=kfVsfOSbJY0',
-                )
-
-    if message.content.startswith('!saturday'):
-        if datetime.today().weekday() == 5:
-            await message.channel.send(
-                'https://www.youtube.com/watch?v=GVCzdpagXOQ',
-            )
-
-    if message.content.startswith('!caturday'):
-        if datetime.today().weekday() == 5:
-            message.channel.typing()
-            await message.channel.send(
-                get_random_caturday_image(),
-            )
-        else:
-            await message.channel.send(
-                'https://i.imgur.com/DKUR9Tk.png',
-            )
-
-    if message.content.startswith('!daysleft'):
-        if message.content == '!daysleft':
-            await message.channel.send(
-                "<@%s>: %s" % (message.author.id, get_days_left(message.author)),
-                )
-        else:
-            for user in message.mentions:
-                await message.channel.send(
-                    "<@%s>: %s" % (user.id, get_days_left(user)),
-                    )
-
-    if CLIENT.user in message.mentions:
-        for trigger in CFG.get('abandontriggers'):
-            if trigger in message.content.lower():
-                await message.channel.send(
-                    choice(CFG.get('imgur').get('abandonship')),
-                )
-                break
-        else:
-            if 'lunch' in message.content.lower():
-                embed = discord.Embed(color=10203435)
-                embed = get_lunch(embed)
-                await message.channel.send(embed=embed)
-
-
-@CLIENT.event
+@BOT.event
 async def on_guild_channel_update(before, after):
     """Handle on_channel_update event"""
     if before.topic != after.topic:
-        await after.send(
-            'New topic:\n```\n%s```' % after.topic,
+        await after.send('New topic:\n```\n%s```' % after.topic)
+
+
+# Commands
+
+
+@BOT.command()
+async def abandonship(ctx):
+    """Show a random "abandon ship" gif"""
+    await ctx.channel.send(choice(CFG.get('imgur').get('abandonship')))
+
+
+@BOT.command()
+@is_day(Weekday.Saturday)
+async def caturday(ctx):
+    """Show a random cat gif on caturdays"""
+    ctx.channel.typing()
+    client = ImgurClient(
+        CFG.get('imgur').get('clientid'),
+        CFG.get('imgur').get('clientsecret')
+    )
+    album = client.get_album(CFG.get('imgur').get('caturdayalbum'))
+    image = choice([image.get('link') for image in album.images])
+    await ctx.channel.send(image)
+
+
+@caturday.error
+async def caturday_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.channel.send('https://i.imgur.com/DKUR9Tk.png')
+
+
+@BOT.command()
+@is_day(Weekday.Friday)
+async def friday(ctx):
+    """Education about the weekday "Friday\""""
+    await ctx.channel.send('https://www.youtube.com/watch?v=kfVsfOSbJY0')
+
+
+@friday.error
+async def friday_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.channel.send(
+            'It is not Friday. Let me link you a video that ' +
+            'can educate you on the matter: ' +
+            'https://www.youtube.com/watch?v=kfVsfOSbJY0',
             )
 
-CLIENT.run(CFG.get('token'))
+
+@BOT.command()
+async def lunch(ctx):
+    """Show what's available for lunch"""
+    embed = discord.Embed(color=10203435)
+    embed = get_lunch(embed)
+    await ctx.channel.send(embed=embed)
+
+
+@BOT.command()
+@is_day(Weekday.Saturday)
+async def saturday(ctx):
+    """Education about the weekday "Saturday\" on saturdays"""
+    await ctx.channel.send('https://www.youtube.com/watch?v=GVCzdpagXOQ')
+
+
+@saturday.error
+async def saturday_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.channel.send(
+            'It is not Saturday. Let me link you a video that ' +
+            'can educate you on the matter: ' +
+            'https://www.youtube.com/watch?v=GVCzdpagXOQ',
+            )
+
+# Initialization of bot
+
+BOT.run(CFG.get('token'))

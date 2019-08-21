@@ -181,6 +181,13 @@ async def saturday_error(ctx, error):
             'https://www.youtube.com/watch?v=GVCzdpagXOQ',
             )
 
+
+@BOT.command()
+async def wowclassic(ctx):
+    """How long left until WoW Classic"""
+    left = datetime(2019, 8, 27) - datetime.now()
+    await ctx.channel.send(':'.join(str(left).split(':')[:2]))
+
 # Initialization of bot
 
 BOT.run(CFG.get('token'))

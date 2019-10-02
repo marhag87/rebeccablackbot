@@ -193,6 +193,13 @@ async def song(ctx):
     """Give a recommendation of what to listen to"""
     await ctx.channel.send(choice(CFG.get('song')))
 
+
+@BOT.command()
+async def joke(ctx):
+    """Tell a random joke"""
+    await ctx.channel.send(choice(CFG.get('joke')))
+
+
 # Initialization of bot
 
 BOT.run(CFG.get('token'))

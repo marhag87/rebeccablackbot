@@ -185,8 +185,7 @@ async def saturday_error(ctx, error):
 @BOT.command()
 async def wowclassic(ctx):
     """How long left until WoW Classic"""
-    left = datetime(2019, 8, 27) - datetime.now()
-    await ctx.channel.send(':'.join(str(left).split(':')[:2]))
+    await ctx.channel.send("We're home boys")
 
 # Initialization of bot
 

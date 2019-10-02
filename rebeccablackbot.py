@@ -187,6 +187,12 @@ async def wowclassic(ctx):
     """How long left until WoW Classic"""
     await ctx.channel.send("We're home boys")
 
+
+@BOT.command()
+async def song(ctx):
+    """Give a recommendation of what to listen to"""
+    await ctx.channel.send(choice(CFG.get('song')))
+
 # Initialization of bot
 
 BOT.run(CFG.get('token'))
